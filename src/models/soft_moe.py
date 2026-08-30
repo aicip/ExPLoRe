@@ -13,7 +13,10 @@ from typing import Callable, Tuple, Optional
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from timm.layers import Mlp
+try:
+    from timm.layers import Mlp
+except ImportError:  # minimal CPU verification environments
+    from .timm_compat import Mlp
 
 
 class SoftMoELayer(nn.Module):

@@ -1,0 +1,12 @@
+{
+  "authority": "M1_SYNTHETIC_MECHANISM",
+  "mechanism_seed": 31,
+  "mechanism_steps": 160,
+  "smoke_seed": 32,
+  "smoke_steps": 80,
+  "faithfulness_seed": 33,
+  "faithfulness_steps": 100,
+  "minimum_specialization_delta": 0.2,
+  "minimum_smoke_loss_reduction": 0.1,
+  "minimum_calibrated_faithfulness": 0.5
+}

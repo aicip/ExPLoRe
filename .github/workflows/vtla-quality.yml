@@ -1,0 +1,35 @@
+name: ExPLoRe-VTLA quality
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install deterministic CI dependencies
+        run: python -m pip install -r requirements-vtla-ci.txt
+      - name: Compile
+        run: python -m compileall -q explore_vtla src/models scripts/check_vtla_green.py
+      - name: Tests
+        run: python -m pytest -q tests
+      - name: Ruff
+        run: >-
+          ruff check explore_vtla tests/vtla scripts/check_vtla_green.py
+          scripts/run_vtla_release.py scripts/build_release_manifest.py examples/vtla_quickstart.py
+      - name: Mechanism gate
+        run: python -m explore_vtla mechanism --steps 160 --min-delta 0.20
+      - name: Verify committed evidence
+        run: python -m explore_vtla verify-evidence results/vtla_v1
+      - name: Verify release manifest
+        run: python -m explore_vtla verify-release-manifest .

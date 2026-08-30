@@ -1,0 +1,1 @@
+{"authority":"M1_SYNTHETIC_MECHANISM","first_contact_step":22,"invariants":{"positive_force_after_contact":true,"slip_emerges":true,"zero_force_before_contact":true},"max_contact_force_n":14.079999514801676,"max_pre_contact_force_n":0.0,"model":"deterministic_compliant_contact_world_v1","phase_count":6,"physical_validation":false,"slip_steps":52,"steps":144}

@@ -5,7 +5,6 @@ from typing import Dict, Any
 
 from .vision_transformer_mim import VisionTransformerMIM
 from .decoder_mae import MAEDecoder
-from .clip_teacher import ClipTeacher
 
 
 def build_student(cfg: Dict[str, Any]) -> VisionTransformerMIM:
@@ -93,8 +92,10 @@ def build_pixel_decoder(cfg: Dict[str, Any]) -> MAEDecoder:
     )
 
 
-def build_teacher(cfg: Dict[str, Any]) -> ClipTeacher:
-    """Builds the frozen CLIP teacher model."""
+def build_teacher(cfg: Dict[str, Any]):
+    """Build the frozen CLIP teacher model, importing CLIP lazily."""
+    from .clip_teacher import ClipTeacher
+
     teacher_cfg = cfg["model"]["teacher"]
     return ClipTeacher(
         model_name=teacher_cfg["name"],

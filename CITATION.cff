@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use the VTLA extension, cite this repository and the upstream ExPLoRe paper."
+title: "ExPLoRe-VTLA: Reality-Coupled Loss Routing for Embodied Multimodal Learning"
+type: software
+authors:
+  - family-names: Lovell
+    given-names: Bryce
+version: 1.0.0
+date-released: 2026-08-30
+license: Apache-2.0
+repository-code: "https://github.com/BryceWDesign/ExPLoRe-VTLA"
+references:
+  - type: conference-paper
+    title: "ExPLoRe: Expert Patch-Level Loss Routing for Multi-Objective Masked Image Modeling"
+    authors:
+      - family-names: Georgiou
+        given-names: Konstantinos
+      - family-names: Tang
+        given-names: Maofeng
+      - family-names: Qi
+        given-names: Hairong
+    year: 2026

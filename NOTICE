@@ -1,0 +1,17 @@
+ExPLoRe-VTLA
+
+This repository is a derivative research fork of aicip/ExPLoRe.
+Upstream ExPLoRe copyright and Apache License 2.0 terms are preserved in LICENSE.
+
+Original ExPLoRe:
+Copyright 2023 Konstantinos Georgiou
+https://github.com/aicip/ExPLoRe
+
+ExPLoRe-VTLA extension code and documentation:
+Copyright 2026 Bryce Lovell
+Licensed under the Apache License, Version 2.0.
+
+Design review also considered user-supplied donor repositories. See
+THIRD_PARTY_NOTICES.md and docs/vtla/DONOR_PROVENANCE.md for bounded provenance
+and required third-party notice text. No Amazon or AWS affiliation or endorsement
+is claimed.

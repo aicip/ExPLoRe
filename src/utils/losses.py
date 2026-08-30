@@ -711,7 +711,7 @@ def compute_importance_loss(
     # Coefficient of variation: std / mean
     # CV = 0 means perfectly balanced, high CV means imbalanced
     importance_mean = importance_filtered.mean()
-    importance_std = importance_filtered.std()
+    importance_std = importance_filtered.std(unbiased=False)
     cv = importance_std / (importance_mean + 1e-8)
     cv_squared = cv ** 2
 

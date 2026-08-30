@@ -1,211 +1,158 @@
-# ExPLoRe: Expert Patch-Level Loss Routing for Multi-Objective Masked Image Modeling
+# ExPLoRe-VTLA
 
-**Official PyTorch implementation of the ECCV 2026 ExPLoRe paper.**
+**Reality-coupled loss routing for vision-tactile-language-action learning.**
 
-ExPLoRe repurposes Soft Mixture of Experts (MoE) dispatch weights as **learned, per-patch loss coefficients** for multi-objective masked image modeling. The key mechanism is **loss-coupling**: loss gradients flow through dispatch weights to the router, enabling content-dependent specialization where different patches receive different emphases across training objectives. With ViT-Base + CLIP-B/16 teacher, ExPLoRe reaches **80.6% linear probe** and **85.3% finetuning** accuracy on ImageNet-1K, competitive with state-of-the-art at lower inference FLOPs.
+ExPLoRe-VTLA is an Apache-2.0 research fork of [aicip/ExPLoRe](https://github.com/aicip/ExPLoRe). It preserves the original ExPLoRe masked-image-modeling implementation and extends its central mechanism, differentiable Soft-MoE dispatch weights reused as per-token loss coefficients, into temporally structured multimodal robot-learning experiments.
 
-**Paper:** [arXiv:2606.31201](https://arxiv.org/abs/2606.31201) (ECCV 2026) | **[MEDiC (no-MoE baseline)](https://github.com/aicip/MEDiC)** | **[MaskDistill-PyTorch](https://github.com/drkostas/MaskDistill-PyTorch)**
+The extension is verification-first. A routing heatmap is **not** treated as an explanation merely because it looks plausible. The repository includes deterministic mechanism tests, sensor reliability masks, intervention-based routing-faithfulness checks, counterfactual calibration, world-model reconciliation, a deterministic contact-world regression, independent safety gating, failure campaigns, evidence hashing, a whole-release manifest, and explicit claim-authority limits.
 
----
+## What changed from ExPLoRe
 
-## Key Results
+Original ExPLoRe asks:
 
-ViT-Base/16, ImageNet-1K, 300 epochs, frozen CLIP ViT-B/16 teacher:
+> Which objective should matter for each image patch?
 
-| Model | Experts | Params | kNN | Linear | Finetune | mIoU (ADE20K) |
-|---|---:|---:|---:|---:|---:|---:|
-| **MEDiC (no-MoE baseline)** | — | 86M | 75.7 | 76.2 | 84.8 | 50.8 |
-| **ExPLoRe (practical)** | 2 | 116M | 75.4 | 79.6 | 84.1 | 51.1* |
-| **ExPLoRe (SOTA)** | 64 | 1.86B | 76.2 | **80.6** | **85.3** | **52.8** |
+ExPLoRe-VTLA tests a related embodied-learning question:
 
-\* with FR+FA+ExD adaptation recipe (paper Tab. 4.8)
+> Which objective and modality should matter at this time in a physical interaction, given vision, touch, force, proprioception, language, action context, embodiment, sensor reliability, and the model's recent prediction error?
 
-### Mechanism isolation (paper Tab. 4.5)
+The new path is additive. Original ExPLoRe code remains under `src/`; VTLA-specific code lives under `explore_vtla/`.
 
-| Ablation | kNN | Δ |
-|---|---:|---:|
-| ExPLoRe E=2 (default) | 75.4 | — |
-| − loss-coupling (detach) | 73.8 | −1.6 |
-| Combine weights (no entropy reg) | 2.1 | −73.3 |
+### Important granularity boundary
 
-The **detach ablation** confirms loss-coupling is the core mechanism, not just adding MoE capacity.
+The v1.0.0 VTLA path operates on **precomputed per-modality feature vectors**, one projected token per modality per timestep. It does not claim raw camera-patch, raw taxel-patch, or production VLA tokenization. Raw images, tactile arrays, and other sensor streams must first be converted into documented features or tokens through an external preprocessing stage. This boundary is intentional and keeps the current release's evidence at the level actually exercised by its tests.
 
----
+## Implemented VTLA capabilities
 
-## Setup
+- **Temporal multimodal Soft-MoE loss routing** across trajectory tokens.
+- **Reliability-aware dispatch**: unavailable inputs cannot receive loss-routing mass, and confidence/freshness are explicit instead of being encoded as fake zero measurements.
+- **Strict trajectory contracts** for declared modality dimensions, action dimensions, floating signal types, device consistency, probability labels, quality bounds, and phase labels.
+- **Seven objective channels**: reconstruction, cross-modal alignment, next-state world modeling, action prediction, contact prediction, slip prediction, and action feasibility.
+- **Action-context and embodiment tokens**, enabling a common contract for temporal policy context and cross-embodiment experiments.
+- **Causal objective aggregation**: action/contact/slip/feasibility outputs use the same objective-specific routing weights whose importance is later inspected.
+- **Prediction-versus-reality reconciliation** with normalized next-state error and an external EMA error-memory primitive that can reduce future confidence through the explicit quality side-channel.
+- **Intervention-calibrated routing**: measured modality-drop degradation can calibrate action-routing mass, rather than assuming routing maps are automatically faithful explanations.
+- **Quantitative routing diagnostics** for token entropy, expert utilization, modality-objective mutual information, and phase-objective mutual information.
+- **Deterministic contact dynamics regression** with compliant normal contact, tangential friction, and slip, adapted from the HapticSight donor concept. It is synthetic M1 evidence, not physical validation.
+- **Deterministic safety gate** independent of learned routing, with force, feasibility, uncertainty, finite-value, and action-norm limits.
+- **Failure-oriented interventions**: modality drop, noise, delay, temporal shuffle, drift, and force spikes.
+- **Calibration metrics**: Brier score and expected calibration error.
+- **Predictive uncertainty** via Monte Carlo stochastic inference when dropout is enabled.
+- **Finite-difference constraint pressure** for failure-directed experiment planning.
+- **Constrained candidate selection** that refuses high-score candidates when declared gates fail.
+- **Portable NPZ trajectory schema** for external dataset conversion without pretending unrun dataset integrations exist.
+- **SHA-256 experiment evidence**, source fingerprints, whole-repository release manifests, and explicit claim-authority levels.
 
-```bash
-git clone https://github.com/aicip/ExPLoRe.git
-cd ExPLoRe
+## Earned local evidence
 
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
+The repository ships an M1 synthetic-mechanism evidence bundle under `results/vtla_v1/`. It is intentionally bounded to deterministic synthetic evidence; **no real-dataset or real-robot performance claim is made**.
 
-**Requirements:** Python 3.10+, PyTorch 2.1+, CUDA 11.8+.
+The release bundle includes:
 
-For semantic segmentation:
-```bash
-pip install mmcv-full==1.7.2 -f https://download.openmmlab.com/mmcv/dist/cu121/torch2.4/index.html
-pip install mmsegmentation==0.30.0
-```
+- a known-answer loss-routing mechanism benchmark,
+- multi-seed mechanism replication,
+- a deterministic contact-dynamics regression,
+- end-to-end synthetic smoke training and routing diagnostics,
+- an intervention-calibrated routing-faithfulness ablation,
+- a coupled-vs-detached task ablation that separately reports optimization loss and action RMSE,
+- claim decisions that preserve failed claims instead of hiding them,
+- environment and source provenance.
 
-### Dataset paths
-
-Download ImageNet-1K and organize as:
-```
-/path/to/imagenet/
-├── train/{class_name}/...
-└── val/{class_name}/...
-```
-
-Edit `data.data_path`, `data.train_dir`, and `data.val_dir` in the pretrain YAMLs to point at your dataset root. For values shared across configs (data paths, W&B entity, SLURM defaults), copy `.env.example` to `.env` and edit; the pretrain and smoke scripts source `.env` at startup.
-
-### Cluster / SLURM
-
-The SLURM scripts under `scripts/` do **not** hardcode `--account`, `--qos`, or `--partition`. Pass them on the sbatch command line (or via a wrapper script):
+Run the verifier instead of trusting this README:
 
 ```bash
-sbatch --account=YOUR_ACCT --qos=YOUR_QOS --partition=YOUR_PART scripts/pretrain.sh configs/pretrain_explore_2exp.yaml
+python -m explore_vtla verify-evidence results/vtla_v1
+python -m explore_vtla verify-release-manifest .
 ```
 
----
+## Quick verification
 
-## Reproducing the paper
-
-### Smoke test (validate setup works, ~15 min on 1 GPU)
+Minimal CPU verification does not require downloading CLIP or timm. The core ExPLoRe path has a narrow PyTorch fallback for the layer primitives used by the test suite, while normal research environments continue to use timm when installed.
 
 ```bash
-sbatch --account=A --qos=Q --partition=P scripts/smoke_train_real.sh configs/pretrain_explore_smoke.yaml
+python -m pytest -q tests
+python -m explore_vtla mechanism --steps 160 --min-delta 0.20
+python -m explore_vtla mechanism-replicate --seed 31 --runs 4 --steps 160 --min-delta 0.20
+python scripts/check_vtla_green.py
 ```
 
-This trains the 2-expert model for 2 epochs on a 10-image-per-class subset and verifies all losses, dispatch routing, and checkpoint I/O work end-to-end.
+The original upstream training dependencies remain in `requirements.txt`. Minimal deterministic CI dependencies are in `requirements-vtla-ci.txt`.
 
-### Pretraining
+## Architecture
 
-**Practical recipe (2 experts, 116M params):**
-```bash
-sbatch scripts/pretrain.sh configs/pretrain_explore_2exp.yaml
-```
-~1 day on 4× H100. Reaches the kNN/LP/FT numbers in the "practical" row of the table above.
-
-**SOTA recipe (64 experts, 1.86B params):**
-```bash
-sbatch scripts/pretrain.sh configs/pretrain_explore_64exp.yaml
-```
-~5–7 days on 4× H100. Reaches 80.6 linear probe / 85.3 finetune.
-
-### Downstream evaluation
-
-```bash
-# kNN (frozen backbone, k=20, cosine similarity)
-sbatch scripts/eval_knn.sh /path/to/checkpoint.pth
-
-# Linear probe (frozen [CLS])
-sbatch scripts/linprobe.sh /path/to/checkpoint.pth
-
-# Full finetuning (with FR+FA+ExD recipe, paper Tab. 4.7)
-sbatch scripts/finetune.sh /path/to/checkpoint.pth
-
-# Semantic segmentation on ADE20K (UperNet, 160K iter)
-sbatch scripts/eval_semseg.sh /path/to/checkpoint.pth
+```text
+vision ─────────┐
+tactile ────────┤
+force ──────────┤
+proprio ────────┤
+language ───────┤──> modality projection + quality/freshness encoding
+previous action ┤                         │
+embodiment ─────┘                         ▼
+                                 causal temporal encoder
+                                           │
+                                  loss-coupled Soft-MoE
+                                           │
+                 ┌──────────┬──────────┬────┼────┬────────┬──────────┐
+                 ▼          ▼          ▼         ▼        ▼          ▼
+              recon     alignment   world     action   contact   feasibility
+                                      model                + slip
+                                           │
+                                prediction ↔ observation
+                                           │
+                          reliability memory / intervention
+                                           │
+                              uncertainty + diagnostics
+                                           │
+                              independent safety boundary
 ```
 
-The default finetune config enables Freeze Routing + Freeze Attention + Expert Dropout (FR+FA+ExD, paper §4.6.3) which contributes +1.5% FT over vanilla MoE fine-tuning and +0.5% over the no-MoE baseline.
+See [`docs/vtla/ARCHITECTURE.md`](docs/vtla/ARCHITECTURE.md) for the exact tensor contracts and loss path.
 
-### Visualizing expert specialization
+## Evidence authority
 
-Reproduce paper Fig. 4.7 — per-patch dispatch-weight overlays showing the foreground/background expert split:
+| Level | Meaning |
+|---|---|
+| M0 | Unit/mathematical verification |
+| M1 | Deterministic synthetic mechanism evidence |
+| M2 | Offline real-dataset evidence |
+| M3 | Physics-simulation evidence |
+| M4 | Hardware-in-loop evidence |
+| M5 | Real-robot evidence |
+| M6 | Independent reproduction |
 
-```bash
-python scripts/visualize_dispatch_weights.py \
-    --checkpoint output/pretrain_explore_2exp/checkpoint-299.pth \
-    --config configs/pretrain_explore_2exp.yaml \
-    --image_dir /path/to/your/images/ \
-    --output_dir output/fig_4_7/ \
-    --block_idx 11
-```
+The included release is **M1**. Higher-authority claims are explicitly blocked until corresponding evidence exists.
 
-The two experts learn complementary spatial specialization without any explicit supervision — Expert 0 concentrates on foreground objects, Expert 1 on background/context.
+See [`docs/vtla/CLAIM_BOUNDARY.md`](docs/vtla/CLAIM_BOUNDARY.md).
 
----
+## External datasets
 
-## How ExPLoRe works
+No external dataset is bundled and no benchmark result is invented. `explore_vtla.dataio` provides a strict portable sequence format so real datasets can be converted into the same validated trajectory contract.
 
-ExPLoRe integrates Soft-MoE [Puigcerver et al., 2023] into a MEDiC-style multi-objective MIM framework at alternating ViT blocks `{1, 3, 5, 7, 9, 11}`. The Soft-MoE dispatch weights `D ∈ R^{B×N×E}` (softmax over patches per expert) are reused as **per-patch loss coefficients**:
+Candidate public research datasets include Daimon-Infinity, FreeTacMan, DROID, and other visuo-tactile / robot-manipulation corpora. Their licenses and data terms must be reviewed independently before use.
 
-```
-L_token = (1/B) Σ_b [ Σ_n D[b, n, expert_0] · L_smooth_l1(student_n, teacher_n) ]
-                   / Σ_n D[b, n, expert_0]
-```
+See [`docs/vtla/DATA_INTEGRATION.md`](docs/vtla/DATA_INTEGRATION.md).
 
-Because dispatch weights are differentiable, loss gradients flow back through `D` to the router parameters, enabling content-dependent specialization (paper §4.4.4). A detach ablation (Tab. 4.5) confirms loss-coupling — not just MoE capacity — is what drives the improvement.
+## Upstream compatibility
 
-**Dispatch (not combine) weights** are used because combine weights have a degeneracy that lets the router minimize loss by zeroing all expert contributions to a patch (paper §4.4.3); dispatch weights are normalized over patches per expert so each expert must distribute its attention somewhere.
+The original ExPLoRe README is preserved at [`docs/upstream/UPSTREAM_README.md`](docs/upstream/UPSTREAM_README.md). The original MIM implementation, configs, scripts, and tests remain present.
 
----
+## License and attribution
 
-## Repo structure
+Apache License 2.0. The upstream ExPLoRe copyright and license are preserved. New ExPLoRe-VTLA code is also released under Apache-2.0.
 
-```
-ExPLoRe/
-├── configs/                                 # 6 YAML configs
-│   ├── pretrain_explore_2exp.yaml          # Practical 2-expert recipe
-│   ├── pretrain_explore_64exp.yaml         # SOTA 64-expert recipe
-│   ├── pretrain_explore_smoke.yaml         # Smoke test
-│   ├── finetune_explore.yaml               # Finetune w/ FR+FA+ExD defaults
-│   ├── linprobe_explore.yaml               # Linear probe
-│   └── semseg_explore.yaml                 # ADE20K UperNet
-├── src/
-│   ├── models/
-│   │   ├── soft_moe.py                     # Soft-MoE layer (the core)
-│   │   ├── vision_transformer_mim.py       # MoE-aware ViT student
-│   │   ├── medic_model.py                  # MEDiCModel + MultiBlockWeightAggregator
-│   │   ├── clip_teacher.py                 # Frozen CLIP teacher
-│   │   └── decoder_mae.py                  # Pixel decoder (for §4.4 Token+Pixel extension)
-│   ├── utils/
-│   │   ├── losses.py                       # apply_moe_loss_weighting + compute_loss
-│   │   └── masking_generator.py            # Block masking
-│   ├── downstream/                         # Finetune, linprobe, semseg
-│   ├── train.py                            # Pretraining loop w/ MoE logging
-│   └── eval_knn.py                         # kNN evaluation
-├── scripts/                                # SLURM scripts
-└── tests/                                  # 167 CPU tests
-```
+Donor repositories were used selectively as design references. License-compatible donor material is attributed where required; unrelated donor runtimes were not merged merely to increase code volume. See [`NOTICE`](NOTICE), [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md), and [`docs/vtla/DONOR_PROVENANCE.md`](docs/vtla/DONOR_PROVENANCE.md).
 
----
+## Claim boundary
 
-## Tests
+This repository does **not** claim:
 
-```bash
-CUDA_VISIBLE_DEVICES="" python -m pytest tests/ -v
-```
+- real-robot manipulation improvement,
+- real-world safety certification,
+- production Amazon/AWS deployment,
+- Amazon endorsement or affiliation,
+- validated sim-to-real transfer,
+- improved performance on Daimon-Infinity, FreeTacMan, DROID, or any other real dataset until those experiments are actually run,
+- raw-image/raw-taxel VLA capability in this v1.0.0 feature-level path,
+- that routing weights are faithful explanations unless intervention evidence supports that claim.
 
-167 tests cover: model construction, loss components, masking, soft-MoE routing axes,
-multi-block weight aggregator, MoE loss-weighting contract.
-
----
-
-## Citation
-
-```bibtex
-@inproceedings{georgiou2026explore,
-  title     = {ExPLoRe: Expert Patch-Level Loss Routing for Multi-Objective Masked Image Modeling},
-  author    = {Georgiou, Konstantinos and Tang, Maofeng and Qi, Hairong},
-  booktitle = {Proceedings of the European Conference on Computer Vision (ECCV)},
-  year      = {2026}
-}
-```
-
----
-
-## License
-
-Apache 2.0. See [LICENSE](LICENSE).
-
-## Acknowledgements
-
-This repo extends [aicip/MEDiC](https://github.com/aicip/MEDiC) (which itself extends
-[drkostas/MaskDistill-PyTorch](https://github.com/drkostas/MaskDistill-PyTorch)).
-Soft-MoE is from [Puigcerver et al., ICLR 2024](https://arxiv.org/abs/2308.00951).
+The release is a functioning research framework plus deterministic M0/M1 evidence. Higher-authority claims remain blocked until higher-authority evidence exists.

@@ -17,15 +17,10 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from timm.layers import (
-    DropPath,
-    LayerNorm,
-    Mlp,
-    PatchEmbed,
-    SwiGLU,
-    trunc_normal_,
-    use_fused_attn,
-)
+try:
+    from timm.layers import DropPath, LayerNorm, Mlp, PatchEmbed, SwiGLU, trunc_normal_, use_fused_attn
+except ImportError:  # minimal CPU verification environments
+    from .timm_compat import DropPath, LayerNorm, Mlp, PatchEmbed, SwiGLU, trunc_normal_, use_fused_attn
 
 
 def gen_relative_position_index(window_size: Tuple[int, int]) -> torch.Tensor:

@@ -1,0 +1,1 @@
+{"faithfulness_seed":33,"faithfulness_steps":100,"mechanism_seed":31,"mechanism_steps":160,"minimum_specialization_delta":0.2,"replication_seeds":[31,33,35,37],"smoke_seed":32,"smoke_steps":80,"task_ablation_seeds":[41,43,45,47],"task_ablation_steps":60}

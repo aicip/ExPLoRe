@@ -1,0 +1,7 @@
+{
+  "max_action_norm": 1.0,
+  "max_force_norm": 8.0,
+  "min_feasibility_probability": 0.55,
+  "max_action_uncertainty": 0.35,
+  "authority": "software_envelope_only_not_certified_robot_safety"
+}
