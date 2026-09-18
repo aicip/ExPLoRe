@@ -4,7 +4,13 @@
 
 ExPLoRe repurposes Soft Mixture of Experts (MoE) dispatch weights as **learned, per-patch loss coefficients** for multi-objective masked image modeling. The key mechanism is **loss-coupling**: loss gradients flow through dispatch weights to the router, enabling content-dependent specialization where different patches receive different emphases across training objectives. With ViT-Base + CLIP-B/16 teacher, ExPLoRe reaches **80.6% linear probe** and **85.3% finetuning** accuracy on ImageNet-1K, competitive with state-of-the-art at lower inference FLOPs.
 
-**Paper:** [arXiv:2606.31201](https://arxiv.org/abs/2606.31201) (ECCV 2026) | **[MEDiC (no-MoE baseline)](https://github.com/aicip/MEDiC)** | **[MaskDistill-PyTorch](https://github.com/drkostas/MaskDistill-PyTorch)**
+**Paper:** [arXiv:2606.31201](https://arxiv.org/abs/2606.31201) | [ECCV camera-ready PDF](https://media.eventhosts.cc/Conferences/ECCV2026/pdfs/15181.pdf) | [ECCV 2026 page](https://eccv.ecva.net/virtual/2026/poster/5992)
+
+**Talk:** [6-minute presentation video](https://www.youtube.com/watch?v=Ed0u6u9Jc9o)
+
+**Related:** **[MEDiC (no-MoE baseline)](https://github.com/aicip/MEDiC)** | **[MaskDistill-PyTorch](https://github.com/drkostas/MaskDistill-PyTorch)**
+
+[![ExPLoRe poster, ECCV 2026](assets/poster.png)](assets/poster.png)
 
 ---
 
@@ -193,7 +199,10 @@ multi-block weight aggregator, MoE loss-weighting contract.
 @inproceedings{georgiou2026explore,
   title     = {ExPLoRe: Expert Patch-Level Loss Routing for Multi-Objective Masked Image Modeling},
   author    = {Georgiou, Konstantinos and Tang, Maofeng and Qi, Hairong},
-  booktitle = {Proceedings of the European Conference on Computer Vision (ECCV)},
+  booktitle = {Computer Vision -- ECCV 2026},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {17047},
+  publisher = {Springer},
   year      = {2026}
 }
 ```
