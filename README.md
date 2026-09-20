@@ -203,7 +203,9 @@ multi-block weight aggregator, MoE loss-weighting contract.
   series    = {Lecture Notes in Computer Science},
   volume    = {17047},
   publisher = {Springer},
-  year      = {2026}
+  year      = {2026},
+  pages     = {286--303},
+  doi       = {10.1007/978-3-032-37314-4_16}
 }
 ```
 
